@@ -1,0 +1,83 @@
+@page "/todoadmin"
+@inject ITodoService todoService
+@inject IDialogService dialogService
+@inject IToastService ToastService
+
+<PageTitle>TODO Admin</PageTitle>
+
+<h1>TODO Admin</h1>
+
+@if (todos == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <FluentDataGrid 
+            Id="todogrid" 
+            Items="@todos" 
+            TGridItem="Todo"
+            ShowHover="true"
+            OnRowClick="@(row => UpdateTodo(row.Item))">
+        <PropertyColumn Title="ID" Property="@(x => x!.Id)" Width="0.06fr" Sortable="true" Align="Align.End"/>
+        <PropertyColumn Title="完了" Property="@(x => x!.IsCompleted ?? false ? "✔" : "")" Width="0.07fr" Sortable="true" Align="Align.Center"/>
+        <PropertyColumn Title="タイトル" Property="@(x => x!.Title)"  Width="1fr" Sortable="true" Align="Align.Start"/>
+        <PropertyColumn Title="ユーザーID" Property="@(x => x!.UserId)"  Width="0.3fr" Sortable="true" Align="Align.End"/>
+    </FluentDataGrid>
+}
+
+@code {
+    private IQueryable<Todo>? todos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await todoService.Login("admin", "admin");
+        await LoadTodos();
+    }
+
+    private async Task LoadTodos() {
+        todos = (await todoService.GetTodos(admin:true)).AsQueryable();
+    }
+
+    private async Task UpdateTodo(Todo? todo) 
+    {
+        // ヘッダーをクリックした際も実行され null になる 
+        if (todo == null) {
+            return;
+        }
+
+        // 最新の情報を取得
+        var curTodo = await todoService.GetTodo(todo.Id!);
+        if (curTodo == null) {
+            // 取得できなかった場合は既に削除されている
+            ToastService.ShowToast(ToastIntent.Error, "対象のレコードが見つかりません。", 0);
+            await LoadTodos();
+            return;
+        }
+
+        // 更新画面表示
+        DialogParameters parameters = new()
+        {
+            Title = $"更新",
+            PrimaryAction = "更新",
+            SecondaryAction = "キャンセル",
+            Modal = true,
+            PreventDismissOnOverlayClick = true, // true = ダイアログの外側をクリックしても閉じない
+            TrapFocus = true, // true = ダイアログがフォーカスをトラップする（false にするとタブ移動でダイアログ外にまでフォーカスが移動する）
+            ShowDismiss = false, // false = ヘッダーの閉じるボタンを非表示
+            PreventScroll = true, // true = ダイアログの外側へのスクロールを防止
+        };
+        var dialog = await dialogService.ShowDialogAsync<TodoUpdateDialog>(new DialogData<Todo>() { Value = curTodo }, parameters);
+        var result = await dialog.Result;
+        if (result.Cancelled)
+        {
+            return;
+        }
+        
+        // 更新内容をDBに反映
+        var newTodo = (result.Data as DialogData<Todo>)!.Value!;
+        await todoService.UpdateTodo(newTodo);
+        await LoadTodos();
+        ToastService.ShowToast(ToastIntent.Success, "更新しました", 3000);
+    }
+}

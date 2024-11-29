@@ -1,0 +1,27 @@
+<PageTitle>ログイン</PageTitle>
+
+<FluentCard Width="400px" Height="400px">
+    <h1>ログイン ※@todoService.IsLoggedIn</h1>
+
+    <FluentTextField 
+        @bind-Value="@UserId" 
+        TextFieldType="TextFieldType.Text" 
+        style="width: 100%;" 
+        AutoComplete="off">
+        ユーザーID:
+    </FluentTextField>
+
+    <FluentTextField 
+        @bind-Value="@Password" 
+        TextFieldType="TextFieldType.Password" 
+        style="width: 100%;" 
+        AutoComplete="off">
+        パスワード:
+    </FluentTextField>
+    
+    <FluentButton 
+        Appearance="Appearance.Accent"
+        @onclick="Login">
+        ログイン
+    </FluentButton>
+</FluentCard>

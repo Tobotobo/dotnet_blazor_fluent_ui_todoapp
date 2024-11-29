@@ -1,0 +1,27 @@
+@implements IDialogContentComponent<DialogData<Todo>>
+
+<FluentStack Orientation="Orientation.Vertical">
+    <FluentLabel Typo="Typography.Body">ID: @(Content.Value!.Id)</FluentLabel>
+    <FluentTextField @bind-Value="@Title" style="width: 100%;" @ref="firstFocusElementReference" AutoComplete="off">タイトル:</FluentTextField>
+    <FluentSwitch @bind-Value=@IsCompleted Label="完了">
+        <span slot="checked-message">On</span>
+        <span slot="unchecked-message">Off</span>
+    </FluentSwitch>
+</FluentStack>
+
+@code {
+    private FluentComponentBase firstFocusElementReference = default!;
+    public string? Title { get => Content.Value!.Title; set => Content.Value = Content.Value! with { Title = value }; }
+    public bool IsCompleted { get => Content.Value!.IsCompleted ?? false; set => Content.Value = Content.Value! with { IsCompleted = value }; } 
+
+    [Parameter]
+    public DialogData<Todo> Content { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await firstFocusElementReference.Element.FocusAsync();
+        }
+    }
+}

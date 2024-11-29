@@ -1,14 +1,10 @@
 namespace TodoApp.Models;
 
 public class TodoServiceInMemory : ITodoService{
-    private static readonly List<User> Users = [
-        new(Id:"user1", Password:"user1", IsAdmin:false),
-        new(Id:"user2", Password:"user2", IsAdmin:false),
-        new(Id:"admin", Password:"admin", IsAdmin:true),
-    ];
-    private static readonly List<Todo> Todos = [];
-    private static int LastAssignedTodoId = 0;
-    private static readonly object TodosLock = new();
+    public static readonly List<User> Users = [];
+    public static readonly List<Todo> Todos = [];
+    public static int LastAssignedTodoId { get; set; } = 0;
+    public static readonly object TodosLock = new();
 
     public User? LoginUser { get; private set; }
 

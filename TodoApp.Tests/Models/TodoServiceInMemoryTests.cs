@@ -10,7 +10,15 @@ public class TodoServiceInMemoryTests
     [SetUp]
     public void Setup()
     {
+        if (TodoServiceInMemory.Users.Count == 0) {
+            TodoServiceInMemory.Users.AddRange([
+                new(Id:"user1", Password:"user1", IsAdmin:false),
+                new(Id:"user2", Password:"user2", IsAdmin:false),
+                new(Id:"admin", Password:"admin", IsAdmin:true),
+            ]);
+        }
         todoService = new TodoServiceInMemory();
+
     }
 
     [TestCase("user1", "user1", false)]
@@ -110,6 +118,9 @@ public class TodoServiceInMemoryTests
         }) {
             await todoService.AddTodo(todo);
         }
+        await todoService.Logout();
+        
+        await todoService.Login(userId, password);
         Todo? newTodo = await todoService.UpdateTodo(new(
             Id:taskId,
             Title:title,

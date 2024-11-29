@@ -1,0 +1,25 @@
+@page "/"
+
+<PageTitle>TODO</PageTitle>
+
+<h1>TODO</h1>
+
+@if (todos == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <FluentDataGrid 
+            Id="todogrid" 
+            Items="@todos" 
+            ItemKey="x => x.Id"
+            TGridItem="Todo"
+            ShowHover="true"
+            OnRowClick="@(row => UpdateTodo(row.Item))">
+        <PropertyColumn Title="ID" Property="@(x => x!.Id)" Width="0.06fr" Sortable="true" Align="Align.End"/>
+        <PropertyColumn Title="完了" Property="@(x => x!.IsCompleted ?? false ? "✔" : "")" Width="0.07fr" Sortable="true" Align="Align.Center"/>
+        <PropertyColumn Title="タイトル" Property="@(x => x!.Title)"  Width="1fr" Sortable="true" Align="Align.Start"/>
+        <PropertyColumn Title="ユーザーID" Property="@(x => x!.UserId)"  Width="0.3fr" Sortable="true" Align="Align.End"/>
+    </FluentDataGrid>
+}
